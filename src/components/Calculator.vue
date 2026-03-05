@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const MAX_DISPLAY_LENGTH = 13
 const EXPONENTIAL_PRECISION = 4
@@ -100,7 +100,7 @@ function handleEquals() {
   const current = parseFloat(display.value)
   const result = calculate(prevValue.value, current, operator.value)
 
-  expression.value = expression.value + display.value + ' ='
+  expression.value = expression.value + ' ='
   display.value = String(result)
   prevValue.value = null
   operator.value = null
@@ -132,6 +132,40 @@ function handlePercent() {
   display.value = String(parseFloat((value / 100).toPrecision(12)))
   justCalculated.value = false
 }
+
+function handleKeydown(event) {
+  let handled = true
+  if (event.key >= '0' && event.key <= '9') {
+    inputDigit(event.key)
+  } else if (event.key === '.') {
+    inputDecimal()
+  } else if (event.key === '+') {
+    handleOperator('+')
+  } else if (event.key === '-') {
+    handleOperator('−')
+  } else if (event.key === '*') {
+    handleOperator('×')
+  } else if (event.key === '/') {
+    handleOperator('÷')
+  } else if (event.key === 'Enter' || event.key === '=') {
+    handleEquals()
+  } else if (event.key === 'Escape') {
+    handleClear()
+  } else if (event.key === '%') {
+    handlePercent()
+  } else {
+    handled = false
+  }
+  if (handled) event.preventDefault()
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
